@@ -1,5 +1,6 @@
 // frontend/src/components/AnalysisDetail.jsx Detailed view with side-by-side image + full metadata, edit & delete features
 import React, { useState } from "react";
+import config from "../config";
 
 const AnalysisDetail = ({ analysis, onBack, onDelete }) => {
   const [editMode, setEditMode] = useState(false);
