@@ -4,6 +4,7 @@ import axios from "axios";
 import AnalysisCard from "../components/AnalysisCard";
 import AnalysisDetail from "../components/AnalysisDetail";
 import { History, AlertCircle, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import config from "../config";
 
 const AnalysisHistory = () => {
   const [analyses, setAnalyses] = useState([]);
@@ -25,7 +26,7 @@ const AnalysisHistory = () => {
       setError(null);
 
       const response = await axios.get(
-        `http://localhost:5000/api/analysis?page=${page}&limit=6`,
+        `${config.API_URL}/api/analysis?page=${page}&limit=6`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -46,7 +47,7 @@ const AnalysisHistory = () => {
     if (!window.confirm("Delete this analysis? This cannot be undone.")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/analysis/${id}`, {
+      await axios.delete(`${config.API_URL}/api/analysis/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

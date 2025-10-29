@@ -3,6 +3,7 @@ import axios from "axios";
 import MapSelector from "../components/MapSelector";
 import CoordinatesConverter from "../components/CoordinatesConverter";
 import { Satellite, Calendar, Map, Calculator, Download, Info, AlertCircle, CheckCircle, Cloud, RefreshCw, MapPin } from "lucide-react";
+import config from "../config";
 
 const Dashboard = () => {
   const [date, setDate] = useState("2024-07-25");
@@ -30,7 +31,7 @@ const Dashboard = () => {
       });
 
       const response = await axios.post(
-        "http://localhost:5000/api/nasa/image",
+        `${config.API_URL}/api/nasa/image`,
         {
           date,
           bbox: bboxArray,
@@ -73,7 +74,7 @@ const Dashboard = () => {
       console.log("💾 Saving analysis...");
 
       const response = await axios.post(
-        "http://localhost:5000/api/analysis",
+        `${config.API_URL}/api/analysis`,
         {
           title: `Analysis - ${date}`,
           description: `Sentinel-2 satellite imagery analysis`,
@@ -308,7 +309,7 @@ const Dashboard = () => {
             </h3>
             <div className="rounded-lg overflow-hidden shadow-xl border border-slate-200 mb-4">
               <img
-                src={`http://localhost:5000${imageUrl}`}
+                src={`${config.API_URL}${imageUrl}`}
                 alt="Satellite"
                 className="w-full h-auto"
                 onLoad={() => console.log("✅ Image loaded successfully")}

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import MapSelector from "../components/MapSelector";
 import { Film, Calendar, Map, Sliders, Play, Pause, ChevronLeft, ChevronRight, AlertCircle, Info, Flame, Sprout, Trees } from "lucide-react";
+import config from "../config";
 
 const TimeLapse = () => {
   const [startDate, setStartDate] = useState("2024-01-01");
@@ -48,7 +49,7 @@ const TimeLapse = () => {
       setProgress(`🛰️ Fetching satellite images...`);
 
       const response = await axios.post(
-        "http://localhost:5000/api/timelapse/generate",
+        `${config.API_URL}/api/timelapse/generate`,
         {
           startDate,
           endDate,
@@ -105,7 +106,7 @@ const TimeLapse = () => {
   const getCurrentImageUrl = () => {
     if (!frames[currentFrame]) return "";
     const frameUrl = frames[currentFrame].url;
-    const fullUrl = `http://localhost:5000${frameUrl}`;
+    const fullUrl = `${config.API_URL}${frameUrl}`;
     console.log(`🖼️ Loading frame ${currentFrame + 1}: ${fullUrl}`);
     return fullUrl;
   };

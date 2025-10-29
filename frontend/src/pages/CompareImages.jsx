@@ -4,6 +4,7 @@ import axios from "axios";
 import MapSelector from "../components/MapSelector";
 import AnalysisCharts from "../components/AnalysisCharts";
 import { Search, Calendar, Map, Download, Satellite, AlertCircle, TrendingUp, BarChart3, Save, Image } from "lucide-react";
+import config from "../config";
 
 const CompareImages = () => {
   const [beforeDate, setBeforeDate] = useState("2024-07-20");
@@ -33,7 +34,7 @@ const CompareImages = () => {
       console.log("📥 Fetching BEFORE image...");
       
       const response = await axios.post(
-        "http://localhost:5000/api/nasa/image",
+        `${config.API_URL}/api/nasa/image`,
         { date: beforeDate, bbox: bboxArray },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -64,7 +65,7 @@ const CompareImages = () => {
       console.log("📥 Fetching AFTER image...");
       
       const response = await axios.post(
-        "http://localhost:5000/api/nasa/image",
+        `${config.API_URL}/api/nasa/image`,
         { date: afterDate, bbox: bboxArray },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -100,7 +101,7 @@ const CompareImages = () => {
       console.log("After ID:", afterImage.fileId);
       
       const response = await axios.post(
-        "http://localhost:5000/api/change-detection",
+        `${config.API_URL}/api/change-detection`,
         {
           beforeImageId: beforeImage.fileId,
           afterImageId: afterImage.fileId,
@@ -129,7 +130,7 @@ const CompareImages = () => {
       console.log("💾 Saving comparison analysis...");
       
       await axios.post(
-        "http://localhost:5000/api/analysis",
+        `${config.API_URL}/api/analysis`,
         {
           title: `Change Detection: ${beforeDate} vs ${afterDate}`,
           description: `Detected ${analysisResult.changePercentage}% change between two dates`,
@@ -327,7 +328,7 @@ const CompareImages = () => {
             {beforeImage ? (
               <div className="rounded-lg overflow-hidden shadow-md border border-slate-200">
                 <img
-                  src={`http://localhost:5000${beforeImage.imageUrl}`}
+                  src={`${config.API_URL}${beforeImage.imageUrl}`}
                   alt="Before"
                   className="w-full h-auto"
                 />
@@ -351,7 +352,7 @@ const CompareImages = () => {
             {afterImage ? (
               <div className="rounded-lg overflow-hidden shadow-md border border-slate-200">
                 <img
-                  src={`http://localhost:5000${afterImage.imageUrl}`}
+                  src={`${config.API_URL}${afterImage.imageUrl}`}
                   alt="After"
                   className="w-full h-auto"
                 />
@@ -430,7 +431,7 @@ const CompareImages = () => {
                 <p className="text-slate-600 mb-4">Red highlights indicate detected changes</p>
                 <div className="rounded-lg overflow-hidden shadow-xl border border-slate-200">
                   <img
-                    src={`http://localhost:5000${diffImageUrl}`}
+                    src={`${config.API_URL}${diffImageUrl}`}
                     alt="Difference"
                     className="w-full h-auto"
                   />

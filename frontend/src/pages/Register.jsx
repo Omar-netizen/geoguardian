@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, User, UserPlus, Shield, Globe, AlertCircle, CheckCircle } from "lucide-react";
+import config from "../config";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
@@ -14,7 +15,7 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", formData);
+      const res = await axios.post(`${config.API_URL}/api/auth/register`, formData);
       setMessage(res.data.message);
 
       setTimeout(() => navigate("/login"), 1000);

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import MapSelector from "../components/MapSelector";
 import { Clock, Plus, X, Map, Check, Trash2, Search, AlertCircle, Info, Bell, MapPin, Calendar, BarChart2, Mail } from "lucide-react";
+import config from "../config";
 
 const Monitoring = () => {
   const [regions, setRegions] = useState([]);
@@ -30,7 +31,7 @@ const Monitoring = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "http://localhost:5000/api/monitoring/regions",
+        `${config.API_URL}/api/monitoring/regions`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setRegions(response.data.regions);
@@ -44,7 +45,7 @@ const Monitoring = () => {
   const addRegion = async () => {
     try {
       await axios.post(
-        "http://localhost:5000/api/monitoring/regions",
+        `${config.API_URL}/api/monitoring/regions`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -70,7 +71,7 @@ const Monitoring = () => {
     if (!window.confirm("Delete this monitored region?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/monitoring/regions/${id}`, {
+      await axios.delete(`${config.API_URL}/api/monitoring/regions/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("✅ Region deleted");
@@ -83,7 +84,7 @@ const Monitoring = () => {
   const triggerManualCheck = async (id) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/monitoring/regions/${id}/check`,
+        `${config.API_URL}/api/monitoring/regions/${id}/check`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
