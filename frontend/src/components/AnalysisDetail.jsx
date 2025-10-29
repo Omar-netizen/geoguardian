@@ -185,8 +185,8 @@ const AnalysisDetail = ({ analysis, onBack, onDelete }) => {
         <div style={styles.imagePanel}>
           <h3>🖼️ Satellite Image</h3>
           {analysis.imageFileId ? (
-            <img
-            src={`${config.API_URL}/api/nasa/image/${analysis.imageFileId}`}
+           <img
+              src={`${config.API_URL}/api/nasa/image/${analysis.imageFileId}`}
               alt="Satellite"
               style={styles.image}
               onError={(e) => {
