@@ -1,4 +1,5 @@
 // backend/index.js
+import 'dotenv/config';
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -8,8 +9,13 @@ import authRoutes from "./routes/auth.js";
 import protectedRoutes from "./routes/protected.js";
 import preferenceRoutes from "./routes/preferences.js";
 import nasaRoutes from "./routes/nasa.js";
+import analysisRoutes from "./routes/analysis.js";
+import changeDetectionRoutes from "./routes/changeDetection.js";
+import timelapseRoutes from "./routes/timelapse.js";
+import monitoringRoutes from "./routes/monitoring.js";
 import connectDB from "./config/db.js";
 import { initGridFS } from "./config/gridfs.js";
+import { startScheduler } from "./services/schedulerService.js";
 
 dotenv.config();
 
@@ -32,6 +38,12 @@ app.use("/api/auth", authRoutes);
 app.use("/api/protected", protectedRoutes);
 app.use("/api/preferences", preferenceRoutes);
 app.use("/api/nasa", nasaRoutes);
+app.use("/api/analysis", analysisRoutes);
+app.use("/api/change-detection", changeDetectionRoutes);
+app.use("/api/timelapse", timelapseRoutes);
+app.use("/api/monitoring", monitoringRoutes);
+// Start the monitoring scheduler
+startScheduler();
 
 // ✅ Health check endpoint
 app.get("/", (req, res) => {

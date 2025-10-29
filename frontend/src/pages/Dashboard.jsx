@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import axios from "axios";
+import MapSelector from "../components/MapSelector";
+import CoordinatesConverter from "../components/CoordinatesConverter";
+import { Satellite, Calendar, Map, Calculator, Download, Info, AlertCircle, CheckCircle, Cloud, RefreshCw, MapPin } from "lucide-react";
 
 const Dashboard = () => {
-  const [date, setDate] = useState("2025-09-29");
-  const [layer, setLayer] = useState("MODIS_Terra_CorrectedReflectance_TrueColor");
-  const [bbox, setBbox] = useState("-74.2591,40.4774,-73.7004,40.9176"); // Example: NYC
-  const [imageUrl, setImageUrl] = useState(null); // ✅ Changed from image to imageUrl
+  const [date, setDate] = useState("2024-07-25");
+  const [bbox, setBbox] = useState("-121.8,39.8,-121.3,40.2");
+  const [imageUrl, setImageUrl] = useState(null);
   const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [showConverter, setShowConverter] = useState(false);
   const token = localStorage.getItem("token");
 
   const fetchImage = async () => {
@@ -17,12 +22,10 @@ const Dashboard = () => {
       setError(null);
       setImageUrl(null);
 
-      // Parse bbox string into array
       const bboxArray = bbox.split(",").map((val) => parseFloat(val.trim()));
 
       console.log("📤 Sending request to backend:", {
         date,
-        layer,
         bbox: bboxArray,
       });
 
@@ -30,8 +33,7 @@ const Dashboard = () => {
         "http://localhost:5000/api/nasa/image",
         {
           date,
-          layer,
-          bbox: bboxArray, // ✅ Send as array instead of string
+          bbox: bboxArray,
         },
         {
           headers: {
@@ -42,7 +44,6 @@ const Dashboard = () => {
 
       console.log("✅ Response from backend:", response.data);
 
-      // ✅ Use imageUrl from response instead of image
       if (response.data.imageUrl) {
         setImageUrl(response.data.imageUrl);
         setMetadata(response.data.metadata);
@@ -61,206 +62,314 @@ const Dashboard = () => {
     }
   };
 
+  const saveAnalysis = async () => {
+    try {
+      if (!metadata || !imageUrl) {
+        alert("Image data missing");
+        return;
+      }
+
+      setSaving(true);
+      console.log("💾 Saving analysis...");
+
+      const response = await axios.post(
+        "http://localhost:5000/api/analysis",
+        {
+          title: `Analysis - ${date}`,
+          description: `Sentinel-2 satellite imagery analysis`,
+          location: "User Location",
+          bbox: metadata.bbox,
+          nasaLayer: "Sentinel-2-L2A",
+          date: metadata.date,
+          imageFileId: imageUrl.split('/').pop(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("✅ Analysis saved:", response.data);
+      alert("✅ Analysis saved to history!");
+      
+      setImageUrl(null);
+      setMetadata(null);
+    } catch (error) {
+      console.error("❌ Error saving analysis:", error);
+      alert("Failed to save analysis");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleMapBBoxSelect = (mapBbox) => {
+    const bboxString = `${mapBbox.west},${mapBbox.south},${mapBbox.east},${mapBbox.north}`;
+    setBbox(bboxString);
+    setShowMap(false);
+  };
+
+  const handleConverterBBoxSelect = (converterBbox) => {
+    setBbox(converterBbox);
+    setShowConverter(false);
+  };
+
   return (
-    <div style={styles.container}>
-      <h2>🛰️ GeoGuardian Dashboard</h2>
-      <p>Fetch satellite imagery from NASA APIs</p>
-
-      <div style={styles.form}>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Date (YYYY-MM-DD):</label>
-          <input
-            type="text"
-            placeholder="Date (YYYY-MM-DD)"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            style={styles.input}
-          />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 text-white py-12 px-6 shadow-lg">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-3 mb-3">
+            <Satellite className="w-10 h-10" />
+            <h1 className="text-4xl font-bold">GeoGuardian Dashboard</h1>
+          </div>
+          <p className="text-emerald-100 text-lg">Fetch high-resolution satellite imagery using Sentinel-2 (10m resolution)</p>
         </div>
-
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Layer:</label>
-          <select
-            value={layer}
-            onChange={(e) => setLayer(e.target.value)}
-            style={styles.input}
-          >
-            <option value="MODIS_Terra_CorrectedReflectance_TrueColor">
-              MODIS Terra True Color
-            </option>
-            <option value="MODIS_Aqua_CorrectedReflectance_TrueColor">
-              MODIS Aqua True Color
-            </option>
-            <option value="VIIRS_CityLights_2012">VIIRS City Lights</option>
-          </select>
-        </div>
-
-        <div style={styles.formGroup}>
-          <label style={styles.label}>
-            Bounding Box (e.g. -74,40,-73,41):
-          </label>
-          <input
-            type="text"
-            placeholder="Bounding Box (west,south,east,north)"
-            value={bbox}
-            onChange={(e) => setBbox(e.target.value)}
-            style={styles.input}
-          />
-          <small style={{ color: "#666" }}>
-            Format: west,south,east,north (e.g., -74.26,40.48,-73.70,40.92 for NYC)
-          </small>
-        </div>
-
-        <button
-          onClick={fetchImage}
-          style={{
-            ...styles.button,
-            opacity: loading ? 0.6 : 1,
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-          disabled={loading}
-        >
-          {loading ? "⏳ Fetching..." : "📥 Fetch Image"}
-        </button>
       </div>
 
-      {error && (
-        <div style={styles.errorBox}>
-          <strong>❌ Error:</strong> {error}
-        </div>
-      )}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        
+        {/* Input Form Section */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8 border border-slate-200">
+          <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <Info className="w-6 h-6 text-emerald-600" />
+            Configure Your Query
+          </h2>
+          
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            {/* Date Input */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
+                <Calendar className="w-4 h-4 text-emerald-600" />
+                Date (YYYY-MM-DD)
+              </label>
+              <input
+                type="text"
+                placeholder="2024-07-25"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+              />
+              <p className="text-xs text-slate-500 mt-1">Sentinel-2 data available from 2015 onwards, updated every 5 days</p>
+            </div>
 
-      {metadata && (
-        <div style={styles.metadataBox}>
-          <h3>📋 Image Information:</h3>
-          <p>
-            <strong>File ID:</strong> <code>{metadata.fileId}</code>
-          </p>
-          <p>
-            <strong>Date:</strong> {metadata.date}
-          </p>
-          <p>
-            <strong>Layer:</strong> {metadata.layer}
-          </p>
-          <p>
-            <strong>Size:</strong> {metadata.size}
-          </p>
-          <p>
-            <strong>Uploaded:</strong> {metadata.uploadDate}
-          </p>
-        </div>
-      )}
+            {/* Satellite Source */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
+                <Satellite className="w-4 h-4 text-emerald-600" />
+                Satellite Source
+              </label>
+              <input
+                type="text"
+                value="Sentinel-2 L2A (High Resolution, Cloud-Masked)"
+                disabled
+                className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-lg text-slate-600 cursor-not-allowed"
+              />
+              <p className="text-xs text-slate-500 mt-1">✅ 10m resolution | ✅ Automatic cloud masking | ✅ Professional-grade data</p>
+            </div>
+          </div>
 
-      {imageUrl && (
-        <div style={styles.imageBox}>
-          <h3>🖼️ Satellite Image Result</h3>
-          <img
-            src={`http://localhost:5000${imageUrl}`}
-            alt="Satellite"
-            style={{
-              width: "100%",
-              maxWidth: "600px",
-              borderRadius: "10px",
-              border: "2px solid #2563eb",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            }}
-            onLoad={() => console.log("✅ Image loaded successfully")}
-            onError={(e) => {
-              console.error("❌ Image failed to load from:", `http://localhost:5000${imageUrl}`);
-              setError("Failed to load image from server. Check browser network tab.");
-            }}
-          />
-          <p style={{ color: "#666", fontSize: "12px", marginTop: "10px" }}>
-            Full URL: <code style={{ background: "#f0f0f0", padding: "2px 4px" }}>http://localhost:5000{imageUrl}</code>
-          </p>
-        </div>
-      )}
+          {/* Bounding Box */}
+          <div className="mb-6">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
+              <MapPin className="w-4 h-4 text-emerald-600" />
+              Bounding Box (Region)
+            </label>
+            <div className="flex gap-3">
+              <input
+                type="text"
+                placeholder="west,south,east,north"
+                value={bbox}
+                onChange={(e) => setBbox(e.target.value)}
+                className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+              />
+              <button
+                onClick={() => {
+                  setShowMap(!showMap);
+                  setShowConverter(false);
+                }}
+                className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg flex items-center gap-2 ${
+                  showMap ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                }`}
+              >
+                <Map className="w-5 h-5" />
+                {showMap ? "Close" : "Map"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowConverter(!showConverter);
+                  setShowMap(false);
+                }}
+                className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg flex items-center gap-2 ${
+                  showConverter ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
+                }`}
+              >
+                <Calculator className="w-5 h-5" />
+                {showConverter ? "Close" : "Convert"}
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">Format: west,south,east,north (e.g., -121.8,39.8,-121.3,40.2 for California wildfire)</p>
+          </div>
 
-      {!imageUrl && !loading && !error && (
-        <div style={styles.placeholderBox}>
-          <p>👆 Enter the details and click "Fetch Image" to get started</p>
+          {/* Fetch Button */}
+          <button
+            onClick={fetchImage}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+          >
+            <Download className="w-6 h-6" />
+            {loading ? "⏳ Fetching from Sentinel..." : "📥 Fetch Satellite Image"}
+          </button>
         </div>
-      )}
+
+        {/* Map Selector */}
+        {showMap && (
+          <div className="mb-8">
+            <MapSelector
+              onBBoxSelect={handleMapBBoxSelect}
+              initialBBox={
+                bbox
+                  ? {
+                      west: parseFloat(bbox.split(",")[0]),
+                      south: parseFloat(bbox.split(",")[1]),
+                      east: parseFloat(bbox.split(",")[2]),
+                      north: parseFloat(bbox.split(",")[3]),
+                    }
+                  : null
+              }
+            />
+          </div>
+        )}
+
+        {/* Coordinates Converter */}
+        {showConverter && (
+          <div className="mb-8">
+            <CoordinatesConverter
+              onBBoxSelect={handleConverterBBoxSelect}
+              initialBBox={bbox}
+            />
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-5 mb-8 flex items-start gap-3">
+            <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-red-800">Error</p>
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Metadata Box */}
+        {metadata && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+            <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <Info className="w-6 h-6 text-blue-600" />
+              Image Information
+            </h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <p className="text-xs font-semibold text-slate-600 mb-1">File ID</p>
+                <p className="text-sm text-slate-800 font-mono">{metadata.fileId}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <p className="text-xs font-semibold text-slate-600 mb-1">Date</p>
+                <p className="text-sm text-slate-800">{metadata.date}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <p className="text-xs font-semibold text-slate-600 mb-1">Source</p>
+                <p className="text-sm text-slate-800">{metadata.source || "Sentinel-2"}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <p className="text-xs font-semibold text-slate-600 mb-1">Size</p>
+                <p className="text-sm text-slate-800">{metadata.size}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <p className="text-xs font-semibold text-slate-600 mb-1">Uploaded</p>
+                <p className="text-sm text-slate-800">{new Date(metadata.uploadDate).toLocaleString()}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <p className="text-xs font-semibold text-slate-600 mb-1">Coordinates</p>
+                <p className="text-sm text-slate-800 font-mono">{metadata.bbox?.join(", ")}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Image Result */}
+        {imageUrl && (
+          <div className="bg-white rounded-xl shadow-lg p-8 mb-8 border border-slate-200">
+            <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+              <Satellite className="w-6 h-6 text-emerald-600" />
+              Satellite Image Result
+            </h3>
+            <div className="rounded-lg overflow-hidden shadow-xl border border-slate-200 mb-4">
+              <img
+                src={`http://localhost:5000${imageUrl}`}
+                alt="Satellite"
+                className="w-full h-auto"
+                onLoad={() => console.log("✅ Image loaded successfully")}
+                onError={(e) => {
+                  console.error("❌ Image failed to load");
+                  setError("Failed to load image from server");
+                }}
+              />
+            </div>
+            <div className="bg-slate-50 p-4 rounded-lg mb-4">
+              <p className="text-xs font-semibold text-slate-600 mb-1">Image URL</p>
+              <p className="text-sm text-slate-800 font-mono break-all">{imageUrl}</p>
+            </div>
+            <button
+              onClick={saveAnalysis}
+              disabled={saving}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+            >
+              <CheckCircle className="w-6 h-6" />
+              {saving ? "💾 Saving..." : "💾 Save to Analysis History"}
+            </button>
+          </div>
+        )}
+
+        {/* Placeholder - Get Started */}
+        {!imageUrl && !loading && !error && (
+          <div className="bg-white rounded-xl shadow-lg p-12 text-center border border-slate-200">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full mb-6">
+              <Satellite className="w-10 h-10 text-emerald-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-800 mb-3">Get Started</h3>
+            <p className="text-slate-600 mb-8 max-w-md mx-auto">Select a date and region, then click "Fetch Satellite Image" to view high-resolution satellite imagery</p>
+            
+            <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-200">
+                <div className="w-12 h-12 bg-emerald-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <MapPin className="w-6 h-6 text-emerald-700" />
+                </div>
+                <h4 className="font-bold text-slate-800 mb-2">High Resolution</h4>
+                <p className="text-sm text-slate-600">10m per pixel clarity</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-xl border border-blue-200">
+                <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Cloud className="w-6 h-6 text-blue-700" />
+                </div>
+                <h4 className="font-bold text-slate-800 mb-2">Cloud Masked</h4>
+                <p className="text-sm text-slate-600">Maximum 30% cloud coverage</p>
+              </div>
+              <div className="bg-gradient-to-br from-teal-50 to-emerald-50 p-6 rounded-xl border border-teal-200">
+                <div className="w-12 h-12 bg-teal-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <RefreshCw className="w-6 h-6 text-teal-700" />
+                </div>
+                <h4 className="font-bold text-slate-800 mb-2">Updated Regularly</h4>
+                <p className="text-sm text-slate-600">Fresh data every 5 days</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    padding: "20px",
-    textAlign: "center",
-    maxWidth: "800px",
-    margin: "0 auto",
-  },
-  form: {
-    marginTop: "20px",
-    background: "#f9f9f9",
-    padding: "20px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-  },
-  formGroup: {
-    marginBottom: "15px",
-    textAlign: "left",
-  },
-  label: {
-    display: "block",
-    marginBottom: "5px",
-    fontWeight: "bold",
-    color: "#333",
-  },
-  input: {
-    padding: "10px",
-    width: "100%",
-    maxWidth: "400px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    fontSize: "14px",
-    boxSizing: "border-box",
-  },
-  button: {
-    padding: "12px 24px",
-    backgroundColor: "#2563eb",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "bold",
-    marginTop: "10px",
-    transition: "background-color 0.3s",
-  },
-  imageBox: {
-    marginTop: "30px",
-    padding: "20px",
-    background: "#f9f9f9",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-  },
-  metadataBox: {
-    marginTop: "20px",
-    padding: "15px",
-    background: "#e3f2fd",
-    borderRadius: "8px",
-    border: "1px solid #2196f3",
-    textAlign: "left",
-  },
-  errorBox: {
-    marginTop: "20px",
-    padding: "15px",
-    background: "#ffebee",
-    borderRadius: "8px",
-    border: "1px solid #f44336",
-    color: "#c62828",
-    textAlign: "left",
-  },
-  placeholderBox: {
-    marginTop: "40px",
-    padding: "40px",
-    background: "#f5f5f5",
-    borderRadius: "8px",
-    color: "#999",
-  },
 };
 
 export default Dashboard;

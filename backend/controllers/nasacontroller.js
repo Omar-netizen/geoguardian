@@ -1,26 +1,43 @@
-import { fetchSatelliteImage } from "../services/nasaService.js";
+import { fetchSatelliteImage } from "../services/sentinelService.js";
 import { getGFS } from "../config/gridfs.js";
 import mongoose from "mongoose";
 
 /**
  * 📸 POST /api/nasa/image
- * Fetches NASA satellite image and stores it in MongoDB GridFS.
+ * Fetches Sentinel-2 satellite image and stores it in MongoDB GridFS.
  */
 export const getSatelliteImage = async (req, res) => {
   try {
-    const { date, layer, bbox } = req.body;
+    const { date, bbox } = req.body;
 
-    if (!date || !layer || !bbox) {
+    console.log("📥 Received request:", { date, bbox });
+
+    if (!date || !bbox) {
       return res.status(400).json({
-        error: "Missing required fields: date, layer, bbox",
+        error: "Missing required fields: date, bbox",
       });
     }
 
-    const imageBuffer = await fetchSatelliteImage(date, layer, bbox);
+    // Ensure bbox is array, not string
+    let bboxArray = bbox;
+    if (typeof bbox === 'string') {
+      bboxArray = bbox.split(',').map(val => parseFloat(val.trim()));
+      console.log("🔧 Converted bbox string to array:", bboxArray);
+    }
+
+    // Validate bbox array
+    if (!Array.isArray(bboxArray) || bboxArray.length !== 4) {
+      return res.status(400).json({
+        error: "BBox must be an array of 4 numbers: [minLon, minLat, maxLon, maxLat]",
+      });
+    }
+
+    console.log(`🛰️ Fetching Sentinel-2 image for ${date}`);
+    const imageBuffer = await fetchSatelliteImage(date, bboxArray);
 
     if (!imageBuffer || imageBuffer.length === 0) {
       return res.status(404).json({
-        error: "No image data received from NASA service",
+        error: "No image data received from Sentinel Hub",
       });
     }
 
@@ -28,10 +45,10 @@ export const getSatelliteImage = async (req, res) => {
     if (!gfs) throw new Error("GridFS not initialized");
 
     const fileId = new mongoose.Types.ObjectId();
-    const filename = `satellite_${date}_${layer}_${Date.now()}.jpg`;
+    const filename = `sentinel_${date}_${Date.now()}.jpg`;
 
     const uploadStream = gfs.openUploadStreamWithId(fileId, filename, {
-      metadata: { date, layer, bbox, uploadDate: new Date() },
+      metadata: { date, bbox: bboxArray, uploadDate: new Date(), source: "Sentinel-2" },
       contentType: "image/jpeg",
     });
 
@@ -49,11 +66,13 @@ export const getSatelliteImage = async (req, res) => {
         filename: filename,
         imageUrl: `/api/nasa/image/${fileIdString}`,
         metadata: {
+          fileId: fileIdString,
           date,
-          layer,
-          bbox,
+          layer: "Sentinel-2-L2A",
+          bbox: bboxArray,
           uploadDate: new Date().toISOString(),
-          size: `${(imageBuffer.length / 1024).toFixed(2)} KB`
+          size: `${(imageBuffer.length / 1024).toFixed(2)} KB`,
+          source: "Sentinel Hub"
         }
       });
     });
@@ -64,7 +83,7 @@ export const getSatelliteImage = async (req, res) => {
         res.status(500).json({ error: "Failed to save image", details: err.message });
     });
   } catch (err) {
-    console.error("❌ NASA Controller Error:", err.message);
+    console.error("❌ Sentinel Controller Error:", err.message);
     if (!res.headersSent)
       res.status(500).json({
         error: err.message,
@@ -104,9 +123,8 @@ export const getImageById = async (req, res) => {
     const file = files[0];
     console.log(`✅ Found image: ${file.filename}`);
     console.log(`📊 File size: ${file.length} bytes`);
-    console.log(`📋 Content type: ${file.contentType}`);
     
-    // ✅ Set headers BEFORE piping
+    // Set headers BEFORE piping
     res.setHeader('Content-Type', 'image/jpeg');
     res.setHeader('Content-Length', file.length);
     res.setHeader('Cache-Control', 'public, max-age=3600');
@@ -119,7 +137,6 @@ export const getImageById = async (req, res) => {
     let bytesReceived = 0;
     downloadStream.on("data", (chunk) => {
       bytesReceived += chunk.length;
-      console.log(`📥 Streaming... ${bytesReceived}/${file.length} bytes`);
     });
     
     downloadStream.on("error", (err) => {
@@ -133,12 +150,11 @@ export const getImageById = async (req, res) => {
       console.log(`✅ Stream complete: ${file.filename} (${bytesReceived} bytes sent)`);
     });
 
-    // ✅ Pipe stream to response
+    // Pipe stream to response
     downloadStream.pipe(res);
 
   } catch (err) {
     console.error("❌ getImageById Error:", err.message);
-    console.error("Stack:", err.stack);
     if (!res.headersSent) {
       res.status(500).json({ error: err.message });
     }
