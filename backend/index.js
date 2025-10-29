@@ -23,8 +23,11 @@ const app = express();
 
 // ✅ Enhanced CORS configuration
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000','https://geoguardian.vercel.app',],
-  
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://geoguardian.vercel.app'  // ← Fixed: removed trailing comma
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -43,6 +46,7 @@ app.use("/api/analysis", analysisRoutes);
 app.use("/api/change-detection", changeDetectionRoutes);
 app.use("/api/timelapse", timelapseRoutes);
 app.use("/api/monitoring", monitoringRoutes);
+
 // Start the monitoring scheduler
 startScheduler();
 
@@ -97,7 +101,7 @@ connectDB()
 ╔════════════════════════════════════════╗
 ║  🛰️  GeoGuardian Backend               ║
 ║  ✅ Server: http://localhost:${PORT}     ║
-║  📡 CORS: http://localhost:3000        ║
+║  📡 CORS: Localhost + Vercel           ║
 ║  🗄️  GridFS: Ready                     ║
 ║  ⚡ Status: Running                    ║
 ╚════════════════════════════════════════╝
