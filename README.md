@@ -2,18 +2,14 @@
 
 **Real-time satellite monitoring for climate action, disaster response, and environmental protection.**
 
-[![Live Demo](https://img.shields.io/badge/demo-live-success)](https://geoguardian.vercel.app)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Built with](https://img.shields.io/badge/built%20with-MERN-green)](https://github.com)
-
 ---
 
 ## 🌍 Overview
 
 GeoGuardian democratizes professional satellite monitoring by providing free, AI-powered environmental change detection. Monitor deforestation, wildfires, floods, and climate change in real-time with automated alerts.
 
-**🎥 [Watch Demo Video](https://youtube.com/your-demo)**  
-**🚀 [Try Live App](https://geoguardian.vercel.app)**
+**🎥 [Watch Demo Video](https://youtu.be/TY2LWT_43-k)**  
+**🚀 [Try Live App](https://geoguardian-mu.vercel.app/)**
 
 ---
 
@@ -151,19 +147,25 @@ Backend: http://localhost:5000
 ## 📸 Screenshots
 
 ### Dashboard
-![Dashboard](screenshots/dashboard.png)
+![Dashboard](<img width="1901" height="906" alt="Screenshot 2025-10-30 124913" src="https://github.com/user-attachments/assets/64823eb3-ec92-47c3-8840-178a6aaa9d8c" />
+)
 *Fetch satellite imagery with coordinates converter*
 
 ### Change Detection
-![Comparison](screenshots/comparison.png)
+![Comparison](<img width="1902" height="897" alt="Screenshot 2025-10-30 130721" src="https://github.com/user-attachments/assets/55ef322b-2a7b-4919-aafe-42fac5b48d27" />
+)
+<img width="1896" height="902" alt="Screenshot 2025-10-30 130907" src="https://github.com/user-attachments/assets/d5db96d6-8e75-4826-b256-e99ac5294e7d" />
+
 *Before/after analysis with AI-powered change detection*
 
 ### Time-Lapse
-![Time-lapse](screenshots/timelapse.png)
+![Time-lapse](<img width="1897" height="905" alt="Screenshot 2025-10-30 131213" src="https://github.com/user-attachments/assets/9e09f83f-54d1-4d49-9c5c-5127486956be" />
+)
 *Animated visualization of environmental changes*
 
 ### Automated Monitoring
-![Monitoring](screenshots/monitoring.png)
+![Monitoring](<img width="1893" height="909" alt="Screenshot 2025-10-30 131348" src="https://github.com/user-attachments/assets/62c892a4-855d-4caa-a25b-1eb35ec15ee0" />
+)
 *Set up regions for automated 24/7 monitoring*
 
 ---
@@ -223,8 +225,6 @@ GET /api/monitoring/regions
 POST /api/monitoring/regions/:id/check
 ```
 
-[Full API Documentation →](API.md)
-
 ---
 
 ## 🧪 Testing
@@ -237,14 +237,6 @@ Before: 2024-07-20
 After: 2024-07-30
 BBox: -121.8,39.8,-121.3,40.3
 Expected: 20-30% change, HIGH severity
-```
-
-**Amazon Deforestation:**
-```
-Before: 2024-01-01
-After: 2024-07-01
-BBox: -54.5,-3.5,-54.0,-3.0
-Expected: 10-20% change, MEDIUM severity
 ```
 
 **Agricultural Seasonal:**
@@ -260,11 +252,9 @@ Expected: 5-15% change, LOW-MEDIUM severity
 ## 🚀 Deployment
 
 Deployed on:
-- **Frontend:** Vercel (https://geoguardian.vercel.app)
-- **Backend:** Render (https://geoguardian-backend.onrender.com)
+- **Frontend:** Vercel 
+- **Backend:** Render 
 - **Database:** MongoDB Atlas
-
-[Deployment Guide →](DEPLOYMENT.md)
 
 ---
 
@@ -280,17 +270,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 ## 👥 Team
 
-**Built with 💚 for Octopus Hackathon 2024**
-
-- [Your Name](https://github.com/yourusername) - Full Stack Developer
+**Built with 💚 for Octopus Hackathon 2025**
 
 ---
 
@@ -304,9 +286,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-- **Email:** your.email@example.com
-- **Project Link:** https://github.com/yourusername/geoguardian
-- **Live Demo:** https://geoguardian.vercel.app
+- **Email:** mdomarkhan314@gmail.com
 
 ---
 
