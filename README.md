@@ -147,25 +147,29 @@ Backend: http://localhost:5000
 ## 📸 Screenshots
 
 ### Dashboard
-![Dashboard](<img width="1901" height="906" alt="Screenshot 2025-10-30 124913" src="https://github.com/user-attachments/assets/64823eb3-ec92-47c3-8840-178a6aaa9d8c" />
-)
+![Dashboard]
+<img width="1901" height="906" alt="Screenshot 2025-10-30 124913" src="https://github.com/user-attachments/assets/64823eb3-ec92-47c3-8840-178a6aaa9d8c" />
+
 *Fetch satellite imagery with coordinates converter*
 
 ### Change Detection
-![Comparison](<img width="1902" height="897" alt="Screenshot 2025-10-30 130721" src="https://github.com/user-attachments/assets/55ef322b-2a7b-4919-aafe-42fac5b48d27" />
-)
+![Comparison]
+<img width="1902" height="897" alt="Screenshot 2025-10-30 130721" src="https://github.com/user-attachments/assets/55ef322b-2a7b-4919-aafe-42fac5b48d27" />
+
 <img width="1896" height="902" alt="Screenshot 2025-10-30 130907" src="https://github.com/user-attachments/assets/d5db96d6-8e75-4826-b256-e99ac5294e7d" />
 
 *Before/after analysis with AI-powered change detection*
 
 ### Time-Lapse
-![Time-lapse](<img width="1897" height="905" alt="Screenshot 2025-10-30 131213" src="https://github.com/user-attachments/assets/9e09f83f-54d1-4d49-9c5c-5127486956be" />
-)
+![Time-lapse]
+<img width="1897" height="905" alt="Screenshot 2025-10-30 131213" src="https://github.com/user-attachments/assets/9e09f83f-54d1-4d49-9c5c-5127486956be" />
+
 *Animated visualization of environmental changes*
 
 ### Automated Monitoring
-![Monitoring](<img width="1893" height="909" alt="Screenshot 2025-10-30 131348" src="https://github.com/user-attachments/assets/62c892a4-855d-4caa-a25b-1eb35ec15ee0" />
-)
+![Monitoring]
+<img width="1893" height="909" alt="Screenshot 2025-10-30 131348" src="https://github.com/user-attachments/assets/62c892a4-855d-4caa-a25b-1eb35ec15ee0" />
+
 *Set up regions for automated 24/7 monitoring*
 
 ---
