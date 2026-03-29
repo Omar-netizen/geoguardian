@@ -11,6 +11,7 @@ import {
   ArcElement,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
+import AIReportCard from "./AIReportCard"; // ← ADDED
 
 ChartJS.register(
   CategoryScale,
@@ -189,6 +190,17 @@ const AnalysisCharts = ({ analysisResult }) => {
           <div style={styles.statLabel}>Total Pixels</div>
         </div>
       </div>
+
+      {/* AI Report Card ← ADDED */}
+      <AIReportCard
+        analysisData={{
+          changeRate: analysisResult.changePercentage,
+          severity: analysisResult.severity?.toUpperCase(),
+          changeType: analysisResult.changeType,
+          changedPixels: analysisResult.changedPixels,
+          totalPixels: analysisResult.totalPixels,
+        }}
+      />
     </div>
   );
 };

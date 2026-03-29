@@ -4,8 +4,8 @@ import https from "https";
 
 const SENTINEL_CLIENT_ID = process.env.SENTINEL_CLIENT_ID;
 const SENTINEL_CLIENT_SECRET = process.env.SENTINEL_CLIENT_SECRET;
-const SENTINEL_TOKEN_URL = "https://services.sentinel-hub.com/oauth/token";
-const SENTINEL_PROCESS_URL = "https://services.sentinel-hub.com/api/v1/process";
+const SENTINEL_TOKEN_URL = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token";
+const SENTINEL_PROCESS_URL = "https://sh.dataspace.copernicus.eu/api/v1/process";
 
 let accessToken = null;
 let tokenExpiry = null;

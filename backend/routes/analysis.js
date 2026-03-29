@@ -8,6 +8,7 @@ import {
   updateAnalysis,
 } from "../controllers/analysisController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { generateEnvironmentalReport } from "../services/geminiService.js"; // ← ADDED (fixed to ES module import)
 
 const router = express.Router();
 
@@ -28,5 +29,56 @@ router.put("/:id", updateAnalysis);
 
 // DELETE: Delete analysis
 router.delete("/:id", deleteAnalysis);
+
+// ── NEW: AI Report endpoint ───────────────────────────────────────────────────
+router.post("/ai-report", async (req, res) => {
+  try {
+    const {
+      changeRate,
+      severity,
+      changeType,
+      changedPixels,
+      totalPixels,
+      region,
+      dateRange,
+    } = req.body;
+
+    if (
+      changeRate === undefined ||
+      !severity ||
+      !changeType ||
+      changedPixels === undefined ||
+      totalPixels === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: changeRate, severity, changeType, changedPixels, totalPixels",
+      });
+    }
+
+    const result = await generateEnvironmentalReport({
+      changeRate,
+      severity,
+      changeType,
+      changedPixels,
+      totalPixels,
+      region,
+      dateRange,
+    });
+
+    if (!result.success) {
+      return res.status(502).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("[/ai-report] Error:", error.message);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error generating AI report.",
+    });
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default router;
